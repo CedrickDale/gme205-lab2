@@ -103,3 +103,11 @@ class PointSet:
     
     def filter_by_tag(self, tag):
         return PointSet([p for p in self.points if p.tag == tag])
+
+   # Optional: counts_per_tag
+    def counts_by_tag(self):
+        counts = {}
+        for p in self.points:
+            tag = p.tag or "None"
+            counts[tag] = counts.get(tag, 0) + 1
+        return counts
