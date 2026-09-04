@@ -61,14 +61,45 @@ class Point:
 # ------------------------------------------------------------------ 
 # Class method (constructing objects from data) 
 # ------------------------------------------------------------------ 
-@classmethod 
-def from_row(cls, row): 
-    return cls( 
-        id=str(row["id"]), 
-        lon=float(row["lon"]), 
-        lat=float(row["lat"]), 
-        name=row.get("name"), 
-        tag=row.get("tag"), 
+    @classmethod 
+    def from_row(cls, row): 
+        return cls( 
+            id=str(row["id"]), 
+            lon=float(row["lon"]), 
+            lat=float(row["lat"]), 
+            name=row.get("name"), 
+            tag=row.get("tag"), 
     ) 
-def is_poi(self): 
-    return (self.tag or "").lower() == "poi"
+    def is_poi(self): 
+        return (self.tag or "").lower() == "poi"
+
+class PointSet:
+    def __init__(self, points: list[Point]):
+        self.points = points
+
+    @classmethod
+    def from_csv(cls, path):
+        points = []
+        with open(path, newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                try:
+                    points.append(Point.from_row(row))
+                except ValueError:
+                    continue
+        return cls(points)
+
+    def count(self):
+        return len(self.points)
+    
+    def bbox(self):
+        if not self.points:
+            return None
+        
+        lon = [p.lon for p in self.points]
+        lat = [p.lat for p in self.points]
+
+        return (min(lon), min(lat), max(lon), max(lat))
+    
+    def filter_by_tag(self, tag):
+        return PointSet([p for p in self.points if p.tag == tag])
